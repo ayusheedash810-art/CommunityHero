@@ -1,0 +1,31 @@
+{% extends 'issues/base.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3>📊 AI Predictive Insights</h3>
+        </div>
+
+        <div class="card-body">
+
+            <h5>🤖 AI Analysis</h5>
+
+            <div class="alert alert-info">
+                {{ insight|linebreaks }}
+            </div>
+
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                ← Back to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

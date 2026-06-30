@@ -1,0 +1,288 @@
+{% extends 'issues/base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">🛠 Admin Dashboard</h2>
+    <a href="{% url 'predictive_insights' %}"
+       class="btn btn-dark mb-4">
+       🤖 View AI Predictive Insights
+    </a>
+    <!-- Statistics -->
+    <div class="row mb-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body text-center">
+                    <h5>Total Issues</h5>
+                    <h2>{{ total }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body text-center">
+                    <h5>Pending</h5>
+                    <h2>{{ pending }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body text-center">
+                    <h5>Resolved</h5>
+                    <h2>{{ resolved }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Priority Cards -->
+    <div class="row mb-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body text-center">
+                    <h5>🔴 High Priority</h5>
+                    <h2>{{ high }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body text-center">
+                    <h5>🟡 Medium Priority</h5>
+                    <h2>{{ medium }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-secondary text-white shadow">
+                <div class="card-body text-center">
+                    <h5>🟢 Low Priority</h5>
+                    <h2>{{ low }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="card shadow mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            🔮 AI Predictive Insight
+        </div>
+
+        <div class="card-body">
+
+            <h5>Current Trend</h5>
+
+            <p>{{ prediction }}</p>
+
+            <div class="alert alert-info">
+                <strong>Recommendation:</strong><br>
+                Allocate more resources to this issue category to reduce future complaints.
+            </div>
+
+        </div>
+    </div>
+    <!-- Issues Table -->
+    <div class="card shadow mb-4">
+
+        <div class="card-header">
+            <h4 class="mb-0">Reported Issues</h4>
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for issue in issues %}
+
+                    <tr>
+
+                        <td>{{ issue.title }}</td>
+
+                        <td>{{ issue.user.username }}</td>
+
+                        <td>{{ issue.status }}</td>
+
+                        <td>
+
+                            <form method="POST" action="{% url 'update_status' issue.pk %}">
+
+                                {% csrf_token %}
+
+                                <select name="status" class="form-select mb-2">
+
+                                    <option value="Pending"
+                                        {% if issue.status == "Pending" %}selected{% endif %}>
+                                        Pending
+                                    </option>
+
+                                    <option value="In Progress"
+                                        {% if issue.status == "In Progress" %}selected{% endif %}>
+                                        In Progress
+                                    </option>
+
+                                    <option value="Resolved"
+                                        {% if issue.status == "Resolved" %}selected{% endif %}>
+                                        Resolved
+                                    </option>
+
+                                </select>
+
+                                <button class="btn btn-primary btn-sm">
+                                    Update
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            No issues found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h4>Category Distribution</h4>
+
+                    <canvas id="categoryChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow">
+
+                <div class="card-body">
+
+                    <h4>Status Distribution</h4>
+
+                    <canvas id="statusChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const labels = [
+        {% for item in category_data %}
+            "{{ item.category }}",
+        {% endfor %}
+    ];
+
+    const values = [
+        {% for item in category_data %}
+            {{ item.total }},
+        {% endfor %}
+    ];
+
+    const categoryCanvas = document.getElementById("categoryChart");
+
+    if (categoryCanvas) {
+        new Chart(categoryCanvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Issues by Category",
+                    data: values
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    const statusLabels = [
+        {% for item in status_data %}
+            "{{ item.status }}",
+        {% endfor %}
+    ];
+
+    const statusValues = [
+        {% for item in status_data %}
+            {{ item.total }},
+        {% endfor %}
+    ];
+
+    const statusCanvas = document.getElementById("statusChart");
+
+    if (statusCanvas) {
+        new Chart(statusCanvas, {
+            type: "doughnut",
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusValues
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    }
+
+});
+</script>
+{% endblock %}

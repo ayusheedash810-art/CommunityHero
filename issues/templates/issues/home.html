@@ -1,0 +1,195 @@
+{% extends 'issues/base.html' %}
+
+{% block content %}
+
+<div class="text-center">
+
+<h1 class="display-4 fw-bold text-primary">
+Community Hero
+</h1>
+<h3>Welcome {{ user.username }}</h3>
+<p class="lead mt-3">
+AI Powered Hyperlocal Problem Solver
+</p>
+
+<p>
+Helping citizens report and track local community issues with AI.
+</p>
+
+<div class="mt-4">
+   <a href="{% url 'report_issue' %}" class="btn btn-primary btn-lg px-5 py-3 shadow">
+    🚀 Report Issue
+   </a>
+</div>
+</div>
+<hr class="my-5">
+<div class="container mt-5">
+
+    <div class="row text-center">
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h2 class="text-primary">{{ total_issues }}</h2>
+                    <h5>📋 Total Reports</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h2 class="text-warning">{{ pending }}</h2>
+                    <h5>🟡 Pending</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h2 class="text-success">{{ resolved }}</h2>
+                    <h5>✅ Resolved</h5>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<h2 class="text-center mb-4">
+    📝 Recent Community Reports
+</h2>
+
+<form method="GET" class="mb-4">
+
+    <div class="row">
+
+        <div class="col-md-6 mb-2">
+
+            <input
+                type="text"
+                name="q"
+                class="form-control"
+                placeholder="Search by title or location..."
+                value="{{ query }}">
+
+        </div>
+
+        <div class="col-md-3 mb-2">
+
+            <select name="status" class="form-select">
+
+                <option value="">All Status</option>
+
+                <option value="Pending"
+                    {% if status == "Pending" %}selected{% endif %}>
+                    Pending
+                </option>
+
+                <option value="In Progress"
+                    {% if status == "In Progress" %}selected{% endif %}>
+                    In Progress
+                </option>
+
+                <option value="Resolved"
+                    {% if status == "Resolved" %}selected{% endif %}>
+                    Resolved
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-3 mb-2">
+
+            <button class="btn btn-primary w-100" type="submit">
+                🔍 Search
+            </button>
+
+        </div>
+
+    </div>
+
+</form>
+<div class="row">
+
+{% for issue in issues %}
+
+<div class="col-md-6 col-lg-4 mb-4">
+
+    <div class="card shadow h-100">
+
+        {% if issue.image %}
+        <img src="{{ issue.image.url }}"
+             class="card-img-top"
+             style="height:220px; object-fit:cover;">
+        {% endif %}
+
+        <div class="card-body">
+
+            <h5 class="card-title">
+                {{ issue.title }}
+            </h5>
+
+            <p class="card-text">
+                {{ issue.description|truncatewords:15 }}
+            </p>
+
+            <p>
+                📍 <strong>{{ issue.location }}</strong>
+            </p>
+            <p class="text-muted">
+            📅 {{ issue.created_at|date:"d M Y" }}
+            </p>
+             <p>
+                👤 {{ issue.user.username }}
+            </p>
+            <p>
+                🏷️ <strong>Category:</strong> {{ issue.category }}
+            </p>
+            <p>
+                🚨 <strong>Priority:</strong> {{ issue.priority }}
+            </p>
+            {% if issue.status == "Pending" %}
+            <span class="badge bg-warning text-dark">
+                Pending
+            </span>
+
+            {% elif issue.status == "In Progress" %}
+
+            <span class="badge bg-info">
+                 In Progress
+            </span>
+
+            {% elif issue.status == "Resolved" %}
+
+            <span class="badge bg-success">
+                    Resolved
+            </span>
+            {% endif %}
+            
+            <div class="mt-3 text-center">
+                <a href="{% url 'issue_detail' issue.id %}"class="btn btn-outline-primary btn-sm">
+                         👁️ View Details
+                </a>
+            </div>
+        
+        </div>
+
+    </div>
+
+</div>
+
+{% empty %}
+
+<div class="text-center">
+
+    <h5>No issues reported yet.</h5>
+
+</div>
+
+{% endfor %}
+
+</div>
+{% endblock %}
