@@ -10,7 +10,8 @@ from .models import Issue, Profile
 from django.shortcuts import get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 import google.generativeai as genai
-from config import GEMINI_API_KEY
+import os
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 from django.db.models import Count
 
 genai.configure(api_key=GEMINI_API_KEY)
